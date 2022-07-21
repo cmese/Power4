@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 258801660915869422}
   - component: {fileID: 7993974108165385769}
   - component: {fileID: 9054595828808671121}
+  - component: {fileID: 8225928166781364325}
   m_Layer: 0
   m_Name: MenuPiece
   m_TagString: Untagged
@@ -99,6 +100,21 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
+--- !u!114 &8225928166781364325
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4133871201531652}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27c82d556885ae31cbfe2aeed4afe5ef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  chipText: {fileID: 7678142239361713386}
+  chipColor: {r: 0, g: 0, b: 0, a: 0}
+  chipRenderer: {fileID: 7993974108165385769}
 --- !u!1 &339700305407613727
 GameObject:
   m_ObjectHideFlags: 0
@@ -136,7 +152,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 0, y: 1.01}
   m_SizeDelta: {x: 1, y: 1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &8822711069002485194

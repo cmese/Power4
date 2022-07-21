@@ -4,25 +4,22 @@ using UnityEngine;
 
 public class DragObject : MonoBehaviour
 {
-    [SerializeField]
-    private GameObject gameBoard; //SWITCH THIS TO GAMEBOARD MANAGER NEXT, chips should become children of gameboard because we need to call enumerator for all chips at once when updating the board, also so we can instantiate this bitch from there
+    [SerializeField] private Gameboard currentBoard;
 
     private Vector3 mOffset;
     private float mZCoord;
 
     private int prevCol, currentCol = -1;
-    [SerializeField]
-    private GameObject previewChipPrefab;
-    private Quaternion chipRotation = Quaternion.Euler(new Vector3(-90, 0, 0));
-    private GameObject previewChip;
-    private Vector3 columnStart;
 
-    [SerializeField]
-    private float speedToTop = 0.5f;
-    [SerializeField]
-    private float speedDownBoard = 0.7f;
-    [SerializeField]
-    private float speedBackToStart = 0.7f;
+    [SerializeField] private MeshRenderer currentChipRenderer;
+
+    [SerializeField] private PreviewChip previewChipPrefab;
+    private Quaternion chipRotation = Quaternion.Euler(new Vector3(-90, 0, 0));
+    private PreviewChip previewChip;
+
+    [SerializeField] private float speedToTop = 0.5f;
+    [SerializeField] private float speedDownBoard = 0.7f;
+    [SerializeField] private float speedBackToStart = 0.7f;
 
     private float target = 1;
     private float current;
@@ -63,24 +60,36 @@ public class DragObject : MonoBehaviour
             currentCol = -1;
         }
         if (prevCol != currentCol) {
-            if (previewChip) Destroy(previewChip);
+            //if (previewChip) Destroy(previewChip);
+            if (previewChip) previewChip.gameObject.SetActive(false);
             if (currentCol > -1) {
-                previewChip = Instantiate(previewChipPrefab, new Vector3(currentCol+0.5f, 1-0.5f, -0.75f), chipRotation);
-                previewChip.GetComponent<Renderer>().material.color = gameObject.GetComponent<Renderer>().material.color;
+                //previewChip = Instantiate(previewChipPrefab, new Vector3(currentCol+0.5f, 1-0.5f, -0.75f), chipRotation);
+                previewChip = currentBoard.GetPreviewChips()[currentCol];
+                previewChip.Init(currentChipRenderer.material.color);
+                previewChip.gameObject.SetActive(true);
+            }
+            if (GameManager.Instance.State == GameState.MainMenu) {
+                MenuManager.Instance.UpdatePanel(currentCol);
             }
             prevCol = currentCol;
         }
     }
 
     void OnMouseUp() {
-        if (previewChip) Destroy(previewChip);
+        //if (previewChip) Destroy(previewChip);
+        if (previewChip) previewChip.gameObject.SetActive(false);
         StartCoroutine(MoveChip());
     }
 
     IEnumerator MoveChip() {
-        int newRow = gameBoard.GetComponent<Gameboard>().insert(currentCol);
+        int newRow = currentBoard.insert(currentCol, gameObject);
         if (newRow > -1) {
+            GameManager.Instance.UpdateGameState(GameState.Decide);
+            //TODO: disable chip collider here
             yield return StartCoroutine(MoveToGameBoard(newRow));
+            if (GameManager.Instance.State == GameState.MainMenu) {
+                MenuManager.Instance.UpdatePanel(-1);
+            }
         } else {
             yield return StartCoroutine(MoveToStart());
         }
