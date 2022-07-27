@@ -10,10 +10,21 @@ public class GameManager : MonoBehaviour
     public GameState prevState;
     public static event Action<GameState> OnGameStateChanged;
 
+    [SerializeField] private PlayerChip playerChipPrefab;
+    private Vector3 startPos = new Vector3(3.5f, -6.0f, -7.0f); // 7/2, -(7-1), -(14/2)
+    private Quaternion startRot = Quaternion.Euler(new Vector3(-90, 0, 0));
+
     [SerializeField] private Gameboard currentBoard;
+
+    private List<GameObject> playerWinList;
+    private List<GameObject> enemyWinList;
+
+    [SerializeField] private Color playerChipColor; //choosing in editor for now
+    //TODO: let user choose color and save/load locally
 
     void Awake() {
         Instance = this;
+        //TODO: set playerChipColor from local
     }
 
     void Start() {
@@ -37,6 +48,7 @@ public class GameManager : MonoBehaviour
             case GameState.SettingsMenu:
                 break;
             case GameState.PlayerTurn:
+                HandlePlayerTurn();
                 break;
             case GameState.EnemyTurn:
                 break;
@@ -54,29 +66,36 @@ public class GameManager : MonoBehaviour
     }
 
     private void HandleMainMenu() {
-        //subscribe to unusued menu event - empty the board, reset panel text, reset preview chips
-        currentBoard.ClearBoard();
     }
 
     private void HandleOnlineMenu() {
         //calling menumanager for signin popups, matchmaking popups, friend invite popups, etc
-        currentBoard.ClearBoard();
     }
 
     private void HandleModeMenu() {
-        currentBoard.ClearBoard();
+    }
+
+    private void HandlePlayerTurn() {
+        //instantiate player chip
+        var playerChip = Instantiate(playerChipPrefab, startPos, startRot);
+        playerChip.Init(playerChipColor);
     }
 
     private void HandleDecide() {
+        currentBoard.CheckForWins();
        //horizontal check
        //vertical check
        //Diaganol check
 
 
-
         //check for win/loss
         //if win UpdateGameState(GameState.Victory)
         //else UpdateGameState(GameState.Lose)
+    }
+
+    //TODO: change this to get from local save
+    public Color GetPlayerChipColor() {
+        return playerChipColor;
     }
 
 }

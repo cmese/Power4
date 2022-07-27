@@ -30,32 +30,6 @@ public class MenuManager : MonoBehaviour
         { 5, new string[2]{ "BLITZ", "Power4 Blitz"} }
     };
 
-    //remove this, use strings, instantiate them and insert them  1 by 1
-    private char[,] mainMenu = new char[6,7] {
-        { '.', '.', '.', '.', '.', '.', '.' },
-        { '.', 'M', '.', 'ﲾ', '.', '', '.' },
-        { '.', 'U', '.', 'C', '.', 'H', '.' },
-        { '.', 'L', '.', 'O', '.', 'I', '.' },
-        { '.', 'T', '.', 'M', '.', 'G', '.' },
-        { '.', 'I', '.', 'P', '.', 'H', '.' },
-    };
-    private char[,] onlineMenu = new char[6,7] {
-        { '.', '.', '.', '.', '.', '.', '.' },
-        { '<', '.', 'M', '.', '.', '.', '.' },
-        { '<', '.', 'A', '.', 'D', '.', '.' },
-        { '<', '.', 'T', '.', 'U', '.', '.' },
-        { '<', '.', 'C', '.', 'E', '.', '.' },
-        { '<', '.', 'H', '.', 'L', '.', '.' },
-    };
-    private char[,] modeMenu = new char[6,7] {
-        { '.', '.', '.', '.', '.', '.', '.' },
-        { '<', '.', '.', '.', '.', 'B', '.' },
-        { '<', '4', '.', 'P', '.', 'L', '.' },
-        { '<', 'O', '.', 'O', '.', 'I', '.' },
-        { '<', 'U', '.', 'W', '.', 'T', '.' },
-        { '<', 'R', '.', '4', '.', 'Z', '.' },
-    };
-
     void Awake() {
         Instance = this;
         GameManager.OnGameStateChanged += GameStateChanged;
@@ -68,13 +42,17 @@ public class MenuManager : MonoBehaviour
     private void GameStateChanged(GameState state) {
         switch (state) {
             case GameState.MainMenu:
+                currentBoard.ClearBoard();
                 currentBoard.DictToBoard(mainMenuDict);
+                GameManager.Instance.UpdateGameState(GameState.PlayerTurn);
                 //currentBoard.DictToBoard(menu[state]);
                 break;
             case GameState.OnlineMenu:
+                currentBoard.ClearBoard();
                 currentBoard.DictToBoard(onlineMenuDict);
                 break;
             case GameState.ModeMenu:
+                currentBoard.ClearBoard();
                 currentBoard.DictToBoard(modeMenuDict);
                 break;
             default:
@@ -85,7 +63,7 @@ public class MenuManager : MonoBehaviour
 
     public void UpdatePanel(int col) {
         infoText.gameObject.SetActive(false);
-        switch (GameManager.Instance.State) {
+        switch (GameManager.Instance.prevState) {
             case GameState.MainMenu:
                 UpdatePanelText(mainMenuDict, col);
                 break;
@@ -98,7 +76,6 @@ public class MenuManager : MonoBehaviour
             default:
                 //infoText.gameObject.SetActive(false);
                 break;
-                //throw new ArgumentOutOfRangeException(nameof(GameManager.Instance.State), GameManager.Instance.State, null);
         }
     }
 
@@ -109,34 +86,3 @@ public class MenuManager : MonoBehaviour
         }
     }
 }
-    /*
-    public void UpdateMenuState(MenuState newState) {
-        currentBoard.ClearBoard();
-        State = newState;
-        //select the correct array and dictionary
-        switch (newState) {
-            case GameState.Home:
-                currentBoard.CreateMenuBoard(homeMenu);
-                break;
-            case MenuState.Online:
-                currentBoard.CreateMenuBoard(onlineMenu);
-                break;
-            case MenuState.Mode:
-                currentBoard.CreateMenuBoard(modeMenu);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
-        }
-        //OnMenuStateChanged?.Invoke(MenuState.Home); //Unused event
-    }*/
-
-
-/*
-public enum MenuState {
-    Home,
-    Online,
-    Mode
-}*/
-
-
-

@@ -7,25 +7,22 @@ public class Gameboard : MonoBehaviour
 {
     private const int rows = 6;
     private const int cols = 7;
-    //[SerializeField] private GameObject menuPiecePrefab;
     [SerializeField] private MenuChip menuChipPrefab;
 
-    [SerializeField] private PreviewChip previewChipPrefab;
-    private List<PreviewChip> previewChips;
+    [SerializeField] private Chip previewChipPrefab;
+    private List<Chip> previewChips;
 
     private Quaternion chipRotation = Quaternion.Euler(new Vector3(-90, 0, 0));
 
-    //private char[,] currentBoardArray; //2d array representation of current gameboard
-    private Dictionary<Vector2, GameObject> currentChips; //dict representation of current gameboard
-    private List<GameObject> movedChips;
+    private Dictionary<Vector2Int, Chip> currentChips; //dict representation of current gameboard
+    private Queue<Vector2Int> movedChips;
 
     void Awake() {
-        currentChips = new Dictionary<Vector2, GameObject>();
+        currentChips = new Dictionary<Vector2Int, Chip>();
+        movedChips = new Queue<Vector2Int>();
         CreatePreviewChips();
     }
     void Start() {
-        //currentBoardArray = new char[6,7];
-        //CreatePreviewChips();
     }
 
     //method takes each column entry in dictionary and populates the board with the given string
@@ -35,15 +32,16 @@ public class Gameboard : MonoBehaviour
             int rowIndex = rows-1;
             for (int i = menuItem.Value[0].Length - 1; i >= 0; i--) {
                 var menuChip = Instantiate(menuChipPrefab, new Vector3(menuItem.Key+0.5f, -rowIndex-0.5f, -0.75f), chipRotation);
-                menuChip.Init(menuItem.Value[0][i].ToString());
-                currentChips[new Vector2(rowIndex, menuItem.Key)] = menuChip.gameObject;
+                menuChip.Init(GameManager.Instance.GetPlayerChipColor());
+                menuChip.SetText(menuItem.Value[0][i].ToString());
+                currentChips[new Vector2Int(rowIndex, menuItem.Key)] = menuChip;
                 rowIndex--;
             }
         }
     }
 
     private void CreatePreviewChips() {
-        previewChips = new List<PreviewChip>();
+        previewChips = new List<Chip>();
         for (int i = 0; i < cols; i++) {
             var previewChip = Instantiate(previewChipPrefab, new Vector3(i+0.5f, 1-0.5f, -0.75f), chipRotation);
             previewChip.gameObject.SetActive(false);
@@ -51,25 +49,23 @@ public class Gameboard : MonoBehaviour
         }
     }
 
-    public List<PreviewChip> GetPreviewChips() {
+    public List<Chip> GetPreviewChips() {
         return previewChips;
     }
 
     public void ClearBoard() {
-        //drop the chips, destroy them when they go passed a certain height
+        //TODO: drop the chips, destroy them when they go passed a certain height
         currentChips.Clear();
     }
 
-    public int insert(int col, GameObject insertedChip) {
+    public int insert(int col, Chip movedChip) {
         if (col < 0) return -1;
         int newRow = -1;
         for (int i = rows - 1; i >= 0; i--) {
-            Vector2 pos = new Vector2(i, col);
-            Debug.Log(pos);
+            Vector2Int pos = new Vector2Int(i, col);
             if (!currentChips.ContainsKey(pos)) {
-                //Debug.Log(pos);
-                currentChips.Add(pos, insertedChip);
-
+                currentChips.Add(pos, movedChip);
+                movedChips.Enqueue(pos);
                 newRow = i;
                 break;
             }
@@ -77,58 +73,162 @@ public class Gameboard : MonoBehaviour
         return newRow;
     }
 
-    /*public int insert(int col) {
-        if (col < 0) return -1;
-        int numRows = currentBoardArray.GetLength(0);
-        int newRow = -1;
-        for (int i=0; i<numRows; i++) {
-            if (i == numRows - 1) {
-                currentBoardArray[i, col] = 'X';
-                newRow = i;
-                break;
-            }
-            if (currentBoardArray[i+1, col] != '.') {
-                currentBoardArray[i, col] = 'X';
-                newRow = i;
-                break;
-            }
-        }
-        return newRow;
-    }*/
-    // Method takes a 2d array and produces Gameboard
-    /*public void CreateMenuBoardArray(char[,] gameboard) {
-        currentBoardArray = gameboard;
-        for (int row=0; row<gameboard.GetLength(0); row++) {
-            for (int col=0; col<gameboard.GetLength(1); col++) {
-                //init with a letter
-                var menuChip = gameboard[row, col] != '.' ? Instantiate(menuChipPrefab, new Vector3(col+.5f, -row-.5f, -.75f), chipRotation) : null;
-                if (menuChip) {
-                    menuChip.Init(gameboard[row, col].ToString());
-                    currentChips[new Vector2(row, col)] = menuChip.gameObject;
-                }
-                //if (menuPiece) menuPiece.transform.GetChild(0).transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = gameboard[row, col].ToString();
+    public void CheckForWins() {
+        HashSet<Vector2Int> totalPlayerSet = new HashSet<Vector2Int>();
+        HashSet<Vector2Int> totalEnemySet = new HashSet<Vector2Int>();
+        while (movedChips.Count > 0) {
+            var chipPos = movedChips.Dequeue();
+            Color chipColor = currentChips[chipPos].GetColor();
+            if (GameManager.Instance.GetPlayerChipColor() == chipColor) {
+                totalPlayerSet.UnionWith(HorizontalCheck(chipPos, chipColor));
+                totalPlayerSet.UnionWith(VerticalCheck(chipPos, chipColor));
+                totalPlayerSet.UnionWith(BottomLeftTopRightDiagCheck(chipPos, chipColor));
+                totalPlayerSet.UnionWith(BottomRightTopLeftDiagCheck(chipPos, chipColor));
+            } else {
+                totalEnemySet.UnionWith(HorizontalCheck(chipPos, chipColor));
+                totalEnemySet.UnionWith(VerticalCheck(chipPos, chipColor));
+                totalEnemySet.UnionWith(BottomLeftTopRightDiagCheck(chipPos, chipColor));
+                totalEnemySet.UnionWith(BottomRightTopLeftDiagCheck(chipPos, chipColor));
             }
         }
-    }*/
+        //start delete process:
+    }
 
-    //inserts char in gameboard array at given column down to the row with first empty space
-    //return new row or  -1 if there is no space in column
-    /*public int insert(int col) {
-        if (col < 0) return -1;
-        int numRows = currentBoardArray.GetLength(0);
-        int newRow = -1;
-        for (int i=0; i<numRows; i++) {
-            if (i == numRows - 1) {
-                currentBoardArray[i, col] = 'X';
-                newRow = i;
-                break;
-            }
-            if (currentBoardArray[i+1, col] != '.') {
-                currentBoardArray[i, col] = 'X';
-                newRow = i;
-                break;
+    private HashSet<Vector2Int> HorizontalCheck(Vector2Int pos, Color sameColor) {
+        HashSet<Vector2Int> matchingChips = new HashSet<Vector2Int>();
+        matchingChips.Add(pos);
+        //prev state must be players turn which means match players color to chip
+        for (int col = pos.y-1; col >= 0; col--) {
+            if (currentChips.TryGetValue(new Vector2Int(pos.x, col), out var neighborChip)) {
+                if (neighborChip.GetColor() == sameColor) {
+                    matchingChips.Add(new Vector2Int(pos.x, col));
+                } else {
+                    break; //different color neighbor chip
+                }
+            } else {
+                break; //no neighboring chips
             }
         }
-        return newRow;
-    }*/
+        for (int col = pos.y+1; col < cols; col++) {
+            if (currentChips.TryGetValue(new Vector2Int(pos.x, col), out var neighborChip)) {
+                if (neighborChip.GetColor() == sameColor) {
+                    matchingChips.Add(new Vector2Int(pos.x, col));
+                } else {
+                    break; //different color neighbor chip
+                }
+            } else {
+                break; //no neighboring chips
+            }
+        }
+        if (matchingChips.Count >= 4) {
+            return matchingChips;
+        }
+        matchingChips.Clear(); //change
+        return matchingChips;
+    }
+
+    private HashSet<Vector2Int> VerticalCheck(Vector2Int pos, Color sameColor) {
+        HashSet<Vector2Int> matchingChips = new HashSet<Vector2Int>();
+        matchingChips.Add(pos);
+        //prev state must be players turn which means match players color to chip
+        for (int row = pos.x-1; row >= 0; row--) {
+            if (currentChips.TryGetValue(new Vector2Int(row, pos.y), out var neighborChip)) {
+                if (neighborChip.GetColor() == sameColor) {
+                    matchingChips.Add(new Vector2Int(row, pos.y));
+                } else {
+                    break; //different color neighbor chip
+                }
+            } else {
+                break; //no neighboring chips
+            }
+        }
+        for (int row = pos.x+1; row < rows; row++) {
+            if (currentChips.TryGetValue(new Vector2Int(row, pos.y), out var neighborChip)) {
+                if (neighborChip.GetColor() == sameColor) {
+                    matchingChips.Add(new Vector2Int(row, pos.y));
+                } else {
+                    break; //different color neighbor chip
+                }
+            } else {
+                break; //no neighboring chips
+            }
+        }
+        if (matchingChips.Count >= 4) {
+            return matchingChips;
+        }
+        matchingChips.Clear(); //change
+        return matchingChips;
+    }
+
+    private HashSet<Vector2Int> BottomLeftTopRightDiagCheck(Vector2Int pos, Color sameColor) {
+        HashSet<Vector2Int> matchingChips = new HashSet<Vector2Int>();
+        matchingChips.Add(pos);
+        for (int row = pos.x+1; row < rows; row++) { //bottom-left diag
+            for (int col = pos.y-1; col >= 0; col--) {
+                if (currentChips.TryGetValue(new Vector2Int(row, col), out var neighborChip)) {
+                    if (neighborChip.GetColor() == sameColor) {
+                        matchingChips.Add(new Vector2Int(row, col));
+                    } else {
+                        break; //different color neighbor chip
+                    }
+                } else {
+                    break; //no neighboring chips
+                }
+            }
+        }
+        for (int row = pos.x-1; row >= 0; row--) { //top-right diag
+            for (int col = pos.y+1; col < cols; col++) {
+                if (currentChips.TryGetValue(new Vector2Int(row, col), out var neighborChip)) {
+                    if (neighborChip.GetColor() == sameColor) {
+                        matchingChips.Add(new Vector2Int(row, col));
+                    } else {
+                        break; //different color neighbor chip
+                    }
+                } else {
+                    break; //no neighboring chips
+                }
+            }
+        }
+        if (matchingChips.Count >= 4) {
+            return matchingChips;
+        }
+        matchingChips.Clear(); //change
+        return matchingChips;
+    }
+
+    private HashSet<Vector2Int> BottomRightTopLeftDiagCheck(Vector2Int pos, Color sameColor) {
+        HashSet<Vector2Int> matchingChips = new HashSet<Vector2Int>();
+        matchingChips.Add(pos);
+        for (int row = pos.x+1; row < rows; row++) { //bottom-right diag
+            for (int col = pos.y+1; col < cols; col++) {
+                if (currentChips.TryGetValue(new Vector2Int(row, col), out var neighborChip)) {
+                    if (neighborChip.GetColor() == sameColor) {
+                        matchingChips.Add(new Vector2Int(row, col));
+                    } else {
+                        break; //different color neighbor chip
+                    }
+                } else {
+                    break; //no neighboring chips
+                }
+            }
+        }
+        for (int row = pos.x-1; row >= 0; row--) { //top-left diag
+            for (int col = pos.y-1; col >= 0; col--) {
+                if (currentChips.TryGetValue(new Vector2Int(row, col), out var neighborChip)) {
+                    if (neighborChip.GetColor() == sameColor) {
+                        matchingChips.Add(new Vector2Int(row, col));
+                    } else {
+                        break; //different color neighbor chip
+                    }
+                } else {
+                    break; //no neighboring chips
+                }
+            }
+        }
+        if (matchingChips.Count >= 4) {
+            return matchingChips;
+        }
+        matchingChips.Clear(); //change
+        return matchingChips;
+    }
 }

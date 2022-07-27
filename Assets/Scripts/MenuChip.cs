@@ -2,14 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MenuChip : MonoBehaviour
+public class MenuChip : Chip
 {
     [SerializeField] private TMPro.TextMeshProUGUI chipText;
-    [SerializeField] private Color chipColor;
-    [SerializeField] private MeshRenderer chipRenderer;
 
-    public void Init(string text) {
-        chipRenderer.material.color = chipColor;
+    public void SetText(string text) {
         chipText.text = text;
     }
 }
