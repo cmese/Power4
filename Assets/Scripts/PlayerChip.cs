@@ -4,13 +4,14 @@ using UnityEngine;
 
 public class PlayerChip : Chip
 {
-    [SerializeField] private Gameboard currentBoard;
+    private Gameboard currentBoard;
+
     [SerializeField] private CapsuleCollider currentChipCollider;
     private Chip previewChip;
 
-    [SerializeField] private float speedToTop = 0.5f;
-    [SerializeField] private float speedDownBoard = 0.7f;
-    [SerializeField] private float speedBackToStart = 0.7f;
+    [SerializeField] private float speedToTop = 120.0f;
+    [SerializeField] private float speedDownBoard = 2.0f;
+    [SerializeField] private float speedBackToStart = 0.8f;
 
     //[SerializeField] private DragObject currentChip;
     private float target=1;
@@ -20,6 +21,7 @@ public class PlayerChip : Chip
 
     void Awake() {
         startPos = gameObject.transform.position;
+        currentBoard = GameManager.Instance.GetGameboard();
     }
 
     public void UpdatePreviewChip(int currentCol) {
@@ -35,12 +37,13 @@ public class PlayerChip : Chip
         StartCoroutine(MoveChipCoroutine(currentCol));
     }
 
+    //TODO: Add duration to all coroutines. Calculate speed based on duration given
     IEnumerator MoveChipCoroutine(int currentCol) {
         if (GameManager.Instance.State == GameState.PlayerTurn) {
             int newRow = currentBoard.insert(currentCol, this);
             if (newRow > -1) {
-                GameManager.Instance.UpdateGameState(GameState.Decide);
                 yield return StartCoroutine(MoveToGameBoard(newRow, currentCol));
+                GameManager.Instance.UpdateGameState(GameState.Decide);
                 MenuManager.Instance.UpdatePanel(-1);
                 yield break;
             }

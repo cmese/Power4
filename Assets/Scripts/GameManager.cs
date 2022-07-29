@@ -14,7 +14,9 @@ public class GameManager : MonoBehaviour
     private Vector3 startPos = new Vector3(3.5f, -6.0f, -7.0f); // 7/2, -(7-1), -(14/2)
     private Quaternion startRot = Quaternion.Euler(new Vector3(-90, 0, 0));
 
-    [SerializeField] private Gameboard currentBoard;
+    [SerializeField] private Gameboard gameboardPrefab;
+    private Gameboard gameboard;
+    private Vector3 gameboardPos = new Vector3(3.5f, -3.0f, 0);
 
     private List<GameObject> playerWinList;
     private List<GameObject> enemyWinList;
@@ -28,6 +30,8 @@ public class GameManager : MonoBehaviour
     }
 
     void Start() {
+        //TODO: fit gameboard into viewport before instantiating
+        gameboard = Instantiate(gameboardPrefab, gameboardPos, Quaternion.identity);
         UpdateGameState(GameState.MainMenu);
     }
 
@@ -82,7 +86,7 @@ public class GameManager : MonoBehaviour
     }
 
     private void HandleDecide() {
-        currentBoard.CheckForWins();
+        StartCoroutine(gameboard.CheckForWins());
        //horizontal check
        //vertical check
        //Diaganol check
@@ -93,6 +97,9 @@ public class GameManager : MonoBehaviour
         //else UpdateGameState(GameState.Lose)
     }
 
+    public Gameboard GetGameboard() {
+        return gameboard;
+    }
     //TODO: change this to get from local save
     public Color GetPlayerChipColor() {
         return playerChipColor;

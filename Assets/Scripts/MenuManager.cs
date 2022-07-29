@@ -5,8 +5,6 @@ using UnityEngine;
 
 public class MenuManager : MonoBehaviour
 {
-    [SerializeField] private Gameboard currentBoard;
-
     [SerializeField] private TMPro.TextMeshProUGUI infoText;
 
     public static MenuManager Instance;
@@ -40,6 +38,7 @@ public class MenuManager : MonoBehaviour
     }
 
     private void GameStateChanged(GameState state) {
+        Gameboard currentBoard = GameManager.Instance.GetGameboard();
         switch (state) {
             case GameState.MainMenu:
                 currentBoard.ClearBoard();

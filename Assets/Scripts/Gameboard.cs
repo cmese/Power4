@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
 
 public class Gameboard : MonoBehaviour
 {
@@ -20,7 +19,7 @@ public class Gameboard : MonoBehaviour
     void Awake() {
         currentChips = new Dictionary<Vector2Int, Chip>();
         movedChips = new Queue<Vector2Int>();
-        CreatePreviewChips();
+        previewChips = CreatePreviewChips();
     }
     void Start() {
     }
@@ -40,13 +39,14 @@ public class Gameboard : MonoBehaviour
         }
     }
 
-    private void CreatePreviewChips() {
+    private List<Chip> CreatePreviewChips() {
         previewChips = new List<Chip>();
         for (int i = 0; i < cols; i++) {
             var previewChip = Instantiate(previewChipPrefab, new Vector3(i+0.5f, 1-0.5f, -0.75f), chipRotation);
             previewChip.gameObject.SetActive(false);
             previewChips.Add(previewChip);
         }
+        return previewChips;
     }
 
     public List<Chip> GetPreviewChips() {
@@ -62,19 +62,19 @@ public class Gameboard : MonoBehaviour
     public int insert(int col, Chip movedChip) {
         if (col < 0) return -1;
         int newRow = -1;
-        for (int i = rows - 1; i >= 0; i--) {
-            Vector2Int pos = new Vector2Int(i, col);
+        for (int row = rows - 1; row >= 0; row--) {
+            Vector2Int pos = new Vector2Int(row, col);
             if (!currentChips.ContainsKey(pos)) {
                 currentChips.Add(pos, movedChip);
                 movedChips.Enqueue(pos);
-                newRow = i;
+                newRow = row;
                 break;
             }
         }
         return newRow;
     }
 
-    public void CheckForWins() {
+    public IEnumerator CheckForWins() {
         HashSet<Vector2Int> totalPlayerSet = new HashSet<Vector2Int>();
         HashSet<Vector2Int> totalEnemySet = new HashSet<Vector2Int>();
         while (movedChips.Count > 0) {
@@ -94,6 +94,9 @@ public class Gameboard : MonoBehaviour
             if (movedChips.Count == 0) {
                 //TODO: Calculate Points for each set
                 //process chips above winners
+                //color totalplayerset, color totalenemyset, pause for a second, then delete
+                //DebugColorizer(totalPlayerSet, totalEnemySet);
+                yield return StartCoroutine(DebugColorizer(totalPlayerSet, totalEnemySet));
                 HashSet<Vector2Int> chipsAboveSet = new HashSet<Vector2Int>();
                 HashSet<Vector2Int> totalWinSet = new HashSet<Vector2Int>(totalPlayerSet);
                 totalWinSet.UnionWith(totalEnemySet);
@@ -132,7 +135,20 @@ public class Gameboard : MonoBehaviour
                     }
                 }
             }
+            Debug.Log("already done");
         }
+    }
+
+    IEnumerator DebugColorizer(HashSet<Vector2Int> playerWins, HashSet<Vector2Int> enemyWins) {
+        Debug.Log("am i here");
+        foreach(Vector2Int pos in playerWins) {
+            currentChips[pos].Init(Color.green);
+        }
+        foreach(Vector2Int pos in enemyWins) {
+            currentChips[pos].Init(Color.red);
+        }
+        yield return new WaitForSeconds(3);
+        Debug.Log("waiting");
     }
 
     private HashSet<Vector2Int> HorizontalCheck(Vector2Int pos, Color sameColor) {
@@ -205,31 +221,35 @@ public class Gameboard : MonoBehaviour
     private HashSet<Vector2Int> BottomLeftTopRightDiagCheck(Vector2Int pos, Color sameColor) {
         HashSet<Vector2Int> matchingChips = new HashSet<Vector2Int>();
         matchingChips.Add(pos);
-        for (int row = pos.x+1; row < rows; row++) { //bottom-left diag
-            for (int col = pos.y-1; col >= 0; col--) {
-                if (currentChips.TryGetValue(new Vector2Int(row, col), out var neighborChip)) {
-                    if (neighborChip.GetColor() == sameColor) {
-                        matchingChips.Add(new Vector2Int(row, col));
-                    } else {
-                        break; //different color neighbor chip
-                    }
+        int row = pos.x+1;
+        int col = pos.y-1;
+        while (row < rows && col >= 0) { //bottom-left diag
+            if (currentChips.TryGetValue(new Vector2Int(row, col), out var neighborChip)) {
+                if (neighborChip.GetColor() == sameColor) {
+                    matchingChips.Add(new Vector2Int(row, col));
                 } else {
-                    break; //no neighboring chips
+                    break; //neighbor is different color
                 }
+            } else {
+                break; //no neighbor
             }
+            row++;
+            col--;
         }
-        for (int row = pos.x-1; row >= 0; row--) { //top-right diag
-            for (int col = pos.y+1; col < cols; col++) {
-                if (currentChips.TryGetValue(new Vector2Int(row, col), out var neighborChip)) {
-                    if (neighborChip.GetColor() == sameColor) {
-                        matchingChips.Add(new Vector2Int(row, col));
-                    } else {
-                        break; //different color neighbor chip
-                    }
+        row = pos.x-1;
+        col = pos.y+1;
+        while (row >= 0 && col < cols) { //top-right diag
+            if (currentChips.TryGetValue(new Vector2Int(row, col), out var neighborChip)) {
+                if (neighborChip.GetColor() == sameColor) {
+                    matchingChips.Add(new Vector2Int(row, col));
                 } else {
-                    break; //no neighboring chips
+                    break; //neighbor is different color
                 }
+            } else {
+                break; //no neighbor
             }
+            row--;
+            col++;
         }
         if (matchingChips.Count >= 4) {
             return matchingChips;
@@ -241,31 +261,35 @@ public class Gameboard : MonoBehaviour
     private HashSet<Vector2Int> BottomRightTopLeftDiagCheck(Vector2Int pos, Color sameColor) {
         HashSet<Vector2Int> matchingChips = new HashSet<Vector2Int>();
         matchingChips.Add(pos);
-        for (int row = pos.x+1; row < rows; row++) { //bottom-right diag
-            for (int col = pos.y+1; col < cols; col++) {
-                if (currentChips.TryGetValue(new Vector2Int(row, col), out var neighborChip)) {
-                    if (neighborChip.GetColor() == sameColor) {
-                        matchingChips.Add(new Vector2Int(row, col));
-                    } else {
-                        break; //different color neighbor chip
-                    }
+        int row = pos.x+1;
+        int col = pos.y+1;
+        while (row < rows && col < cols) { //bottom-right diag
+            if (currentChips.TryGetValue(new Vector2Int(row, col), out var neighborChip)) {
+                if (neighborChip.GetColor() == sameColor) {
+                    matchingChips.Add(new Vector2Int(row, col));
                 } else {
-                    break; //no neighboring chips
+                    break; //neighbor is different color
                 }
+            } else {
+                break; //no neighbor
             }
+            row++;
+            col++;
         }
-        for (int row = pos.x-1; row >= 0; row--) { //top-left diag
-            for (int col = pos.y-1; col >= 0; col--) {
-                if (currentChips.TryGetValue(new Vector2Int(row, col), out var neighborChip)) {
-                    if (neighborChip.GetColor() == sameColor) {
-                        matchingChips.Add(new Vector2Int(row, col));
-                    } else {
-                        break; //different color neighbor chip
-                    }
+        row = pos.x-1;
+        col = pos.y-1;
+        while (row >= 0 && col >= 0) { //top-left diag
+            if (currentChips.TryGetValue(new Vector2Int(row, col), out var neighborChip)) {
+                if (neighborChip.GetColor() == sameColor) {
+                    matchingChips.Add(new Vector2Int(row, col));
                 } else {
-                    break; //no neighboring chips
+                    break; //neighbor is different color
                 }
+            } else {
+                break; //no neighbor
             }
+            row--;
+            col--;
         }
         if (matchingChips.Count >= 4) {
             return matchingChips;
