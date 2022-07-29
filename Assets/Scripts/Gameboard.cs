@@ -58,6 +58,7 @@ public class Gameboard : MonoBehaviour
         currentChips.Clear();
     }
 
+    //TODO: change to moveDownInsert
     public int insert(int col, Chip movedChip) {
         if (col < 0) return -1;
         int newRow = -1;
@@ -82,7 +83,7 @@ public class Gameboard : MonoBehaviour
             if (GameManager.Instance.GetPlayerChipColor() == chipColor) {
                 totalPlayerSet.UnionWith(HorizontalCheck(chipPos, chipColor));
                 totalPlayerSet.UnionWith(VerticalCheck(chipPos, chipColor));
-                totalPlayerSet.UnionWith(BottomLeftTopRightDiagCheck(chipPos, chipColor));
+                totalPlayerSet.UnionWith(BottomLeftTopRightDiagCheck(chipPos, chipColor)); //can save diag checks if check chipPos.x, chipPos.y is possible for 4 chip diag
                 totalPlayerSet.UnionWith(BottomRightTopLeftDiagCheck(chipPos, chipColor));
             } else {
                 totalEnemySet.UnionWith(HorizontalCheck(chipPos, chipColor));
@@ -90,8 +91,48 @@ public class Gameboard : MonoBehaviour
                 totalEnemySet.UnionWith(BottomLeftTopRightDiagCheck(chipPos, chipColor));
                 totalEnemySet.UnionWith(BottomRightTopLeftDiagCheck(chipPos, chipColor));
             }
+            if (movedChips.Count == 0) {
+                //TODO: Calculate Points for each set
+                //process chips above winners
+                HashSet<Vector2Int> chipsAboveSet = new HashSet<Vector2Int>();
+                HashSet<Vector2Int> totalWinSet = new HashSet<Vector2Int>(totalPlayerSet);
+                totalWinSet.UnionWith(totalEnemySet);
+                foreach (Vector2Int pos in totalWinSet) {
+                    for (int row = pos.x-1; row >= 0; row--) {
+                        Vector2Int chipAbove = new Vector2Int(row, pos.y);
+                        //if nothing above it, break
+                        if (!currentChips.ContainsKey(chipAbove))
+                            break;
+                        //if something above it, and not in totalwinset, add to moved chips
+                        if (!totalWinSet.Contains(chipAbove)) {
+                            chipsAboveSet.Add(chipAbove);
+                            //movedChips.Enqueue(chipAbove);
+                        }
+                    }
+                    //delete the chip
+                    Destroy(currentChips[pos].gameObject);
+                    currentChips.Remove(pos);
+                }
+
+                //better to do it this way so that bottom chips move down before chips above it
+                //move to own function
+                for (int col = 0; col < cols; col++) {
+                    int spaceCount = 0;
+                    for (int row = rows-1; row >=0; row--) {
+                        Vector2Int chipAbove = new Vector2Int(row, col);
+                        if (!currentChips.ContainsKey(chipAbove))
+                            spaceCount++;
+                        if (chipsAboveSet.Contains(chipAbove)) {
+                            var chip = currentChips[chipAbove];
+                            currentChips.Remove(chipAbove);
+                            Vector2Int newLocation = new Vector2Int(chipAbove.x + spaceCount, chipAbove.y);
+                            currentChips[newLocation] = chip;
+                            movedChips.Enqueue(newLocation);
+                        }
+                    }
+                }
+            }
         }
-        //start delete process:
     }
 
     private HashSet<Vector2Int> HorizontalCheck(Vector2Int pos, Color sameColor) {
@@ -121,6 +162,7 @@ public class Gameboard : MonoBehaviour
             }
         }
         if (matchingChips.Count >= 4) {
+
             return matchingChips;
         }
         matchingChips.Clear(); //change
