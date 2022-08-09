@@ -1,11 +1,12 @@
-using System;
+/*using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
+public class GameManagerOld : MonoBehaviour
 {
-    public static GameManager Instance;
+    
+    public static GameManagerOld Instance;
     public GameState State;
     public GameState prevState;
     public static event Action<GameState> OnGameStateChanged;
@@ -21,17 +22,23 @@ public class GameManager : MonoBehaviour
     private List<GameObject> playerWinList;
     private List<GameObject> enemyWinList;
 
+    private bool menu = false;
+    private bool online = false;
+    private int lastPlayerMove;
+    private GameState currentMenu;
+
     [SerializeField] private Color playerChipColor; //choosing in editor for now
     //TODO: let user choose color and save/load locally
 
     void Awake() {
         Instance = this;
+        gameboard = Instantiate(gameboardPrefab, gameboardPos, Quaternion.identity);
         //TODO: set playerChipColor from local
     }
 
     void Start() {
         //TODO: fit gameboard into viewport before instantiating
-        gameboard = Instantiate(gameboardPrefab, gameboardPos, Quaternion.identity);
+        //gameboard = Instantiate(gameboardPrefab, gameboardPos, Quaternion.identity);
         UpdateGameState(GameState.MainMenu);
     }
 
@@ -70,13 +77,17 @@ public class GameManager : MonoBehaviour
     }
 
     private void HandleMainMenu() {
+        menu = true;
+        online = false;
     }
 
     private void HandleOnlineMenu() {
+        online = true;
         //calling menumanager for signin popups, matchmaking popups, friend invite popups, etc
     }
 
     private void HandleModeMenu() {
+        menu = false;
     }
 
     private void HandlePlayerTurn() {
@@ -86,15 +97,25 @@ public class GameManager : MonoBehaviour
     }
 
     private void HandleDecide() {
-        StartCoroutine(gameboard.CheckForWins());
-       //horizontal check
-       //vertical check
-       //Diaganol check
+        StartCoroutine(gameboard.Decide(menu));
 
-
-        //check for win/loss
+        MenuManager.Instance.UpdatePanel(-1);
+        //check for win/loss depending on gamemode 
         //if win UpdateGameState(GameState.Victory)
         //else UpdateGameState(GameState.Lose)
+    }
+
+    //chip was successfully inserted into gameboard
+    public void ChipInserted(int col) {
+        if (menu) { //if still in one of the menu states
+            MenuManager.Instance.getMenu
+        }
+        if (MenuManager.Instance.getMenu().TryGetValue(prevState, out var menuDict)) {
+            if (menuDict.TryGetValue(col, out var menuItem)) {
+                GameManager.Instance.UpdateGameState(menuItem.getNextState());
+            }
+        }
+        GameManager.Instance.UpdateGameState(GameState.Decide);
     }
 
     public Gameboard GetGameboard() {
@@ -106,7 +127,6 @@ public class GameManager : MonoBehaviour
     }
 
 }
-
 public enum GameState {
     MainMenu,
     OnlineMenu,
@@ -117,6 +137,6 @@ public enum GameState {
     Decide,
     Victory,
     Lose
-}
+}*/
 
 

@@ -6,41 +6,31 @@ public class Gameboard : MonoBehaviour
 {
     private const int rows = 6;
     private const int cols = 7;
-    [SerializeField] private MenuChip menuChipPrefab;
 
-    [SerializeField] private Chip previewChipPrefab;
-    private List<Chip> previewChips;
+    [SerializeField] private ChipManager previewChipPrefab;
+    private List<ChipManager> previewChips;
 
     private Quaternion chipRotation = Quaternion.Euler(new Vector3(-90, 0, 0));
 
-    private Dictionary<Vector2Int, Chip> currentChips; //dict representation of current gameboard
+    private Dictionary<Vector2Int, ChipManager> currentChips; //dict representation of current gameboard
     private Queue<Vector2Int> movedChips;
 
+    private int mostRecentPlay;
+
     void Awake() {
-        currentChips = new Dictionary<Vector2Int, Chip>();
+        currentChips = new Dictionary<Vector2Int, ChipManager>();
         movedChips = new Queue<Vector2Int>();
         previewChips = CreatePreviewChips();
     }
     void Start() {
     }
 
-    //method takes each column entry in dictionary and populates the board with the given string
-    //assumes column string lengths <= 6 characters long
-    public void DictToBoard(Dictionary<int, string[]> menuDict) {
-        foreach (KeyValuePair<int, string[]> menuItem in menuDict) {
-            int rowIndex = rows-1;
-            for (int i = menuItem.Value[0].Length - 1; i >= 0; i--) {
-                var menuChip = Instantiate(menuChipPrefab, new Vector3(menuItem.Key+0.5f, -rowIndex-0.5f, -0.75f), chipRotation);
-                menuChip.Init(GameManager.Instance.GetPlayerChipColor());
-                menuChip.SetText(menuItem.Value[0][i].ToString());
-                currentChips[new Vector2Int(rowIndex, menuItem.Key)] = menuChip;
-                rowIndex--;
-            }
-        }
+    public void AddChip(Vector2Int pos, ChipManager chip) {
+        currentChips[pos] = chip;
     }
 
-    private List<Chip> CreatePreviewChips() {
-        previewChips = new List<Chip>();
+    private List<ChipManager> CreatePreviewChips() {
+        previewChips = new List<ChipManager>();
         for (int i = 0; i < cols; i++) {
             var previewChip = Instantiate(previewChipPrefab, new Vector3(i+0.5f, 1-0.5f, -0.75f), chipRotation);
             previewChip.gameObject.SetActive(false);
@@ -49,17 +39,21 @@ public class Gameboard : MonoBehaviour
         return previewChips;
     }
 
-    public List<Chip> GetPreviewChips() {
+    public List<ChipManager> GetPreviewChips() {
         return previewChips;
     }
 
     public void ClearBoard() {
         //TODO: drop the chips, destroy them when they go passed a certain height
+        foreach (ChipManager chip in currentChips.Values) {
+            Destroy(chip.gameObject);
+        }
         currentChips.Clear();
+        movedChips.Clear();
     }
 
     //TODO: change to moveDownInsert
-    public int insert(int col, Chip movedChip) {
+    public int insert(int col, ChipManager movedChip) {
         if (col < 0) return -1;
         int newRow = -1;
         for (int row = rows - 1; row >= 0; row--) {
@@ -68,13 +62,27 @@ public class Gameboard : MonoBehaviour
                 currentChips.Add(pos, movedChip);
                 movedChips.Enqueue(pos);
                 newRow = row;
+                //GameManager.Instance.ChipInserted(col);
                 break;
             }
         }
         return newRow;
     }
 
-    public IEnumerator CheckForWins() {
+    public int ProcessGameboard() {
+        return 0;
+    }
+/*
+    IEnumerator GameDecideCoroutine(bool menu) {
+        yield return StartCoroutine(CheckForWins());
+        if (menu) {
+            MenuManager.Instance.UpdateMenu(mostRecentPlay);
+        } else {
+            //update gamestate = player turn again
+        }
+    }
+*/
+    IEnumerator CheckForWins() {
         HashSet<Vector2Int> totalPlayerSet = new HashSet<Vector2Int>();
         HashSet<Vector2Int> totalEnemySet = new HashSet<Vector2Int>();
         while (movedChips.Count > 0) {
@@ -129,23 +137,23 @@ public class Gameboard : MonoBehaviour
                             var chip = currentChips[chipAbove];
                             currentChips.Remove(chipAbove);
                             Vector2Int newLocation = new Vector2Int(chipAbove.x + spaceCount, chipAbove.y);
+                            chip.MoveDown(newLocation.x);
                             currentChips[newLocation] = chip;
                             movedChips.Enqueue(newLocation);
                         }
                     }
                 }
             }
-            Debug.Log("already done");
         }
     }
 
     IEnumerator DebugColorizer(HashSet<Vector2Int> playerWins, HashSet<Vector2Int> enemyWins) {
         Debug.Log("am i here");
         foreach(Vector2Int pos in playerWins) {
-            currentChips[pos].Init(Color.green);
+            currentChips[pos].SetColor(Color.green);
         }
         foreach(Vector2Int pos in enemyWins) {
-            currentChips[pos].Init(Color.red);
+            currentChips[pos].SetColor(Color.red);
         }
         yield return new WaitForSeconds(3);
         Debug.Log("waiting");

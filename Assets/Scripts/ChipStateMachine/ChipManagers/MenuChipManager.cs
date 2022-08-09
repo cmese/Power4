@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MenuChip : Chip
+public class MenuChipManager : ChipManager
 {
     [SerializeField] private TMPro.TextMeshProUGUI chipText;
 
