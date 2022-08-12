@@ -3,23 +3,19 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerChipManager : ChipManager {
-    public ChipStateMachine stateMachine {get; private set;}
-    public Queue<ChipState> stateQueue {get; private set;}
-    //states: idle, dragging, insert,
-
     private Vector3 mOffset;
     private float mZCoord;
-    private int prevCol, currentCol = -1;
+    private int prevCol = -1;
+    public int currentCol {get; private set;}
 
     private Vector3 startPos;
 
     void Start() {
-        stateMachine = new ChipStateMachine();
-        stateQueue = new Queue<ChipState>();
         stateMachine.ChangeState(new IdleState(this));
         //stateQueue.Enqueue(new IdleState(this));
         //stateMachine.ChangeState(stateQueue.Dequeue());
         startPos = gameObject.transform.position;
+        currentCol = -1;
     }
 
     void Update() {
@@ -64,11 +60,12 @@ public class PlayerChipManager : ChipManager {
 
     void OnMouseUp() {
         //TODO: remove previewchip
-            //try to insert
-        int newRow = GameManager.Instance.AddToBoard(currentCol); //returns -1 if not players turn or invalid move
+        //try to insert
+        int newRow = GameManager.Instance.AddToBoard(currentCol, this); //returns -1 if not players turn or invalid move
         if (newRow > -1) {
+            gameObject.GetComponent<Collider>().enabled = false;
             stateQueue.Enqueue(new MoveState(this, new Vector3(currentCol+0.5f, 1-0.5f, -0.75f), 1.0f)); //move to top
-            stateQueue.Enqueue(new MoveState(this, new Vector3(currentCol+0.5f, newRow-0.5f, -0.75f), 1.0f)); //move down board
+            stateQueue.Enqueue(new MoveState(this, new Vector3(currentCol+0.5f, -newRow-0.5f, -0.75f), 1.0f)); //move down board
             stateQueue.Enqueue(new InBoardState(this));
         } else {
             stateQueue.Enqueue(new MoveState(this, startPos, 1.0f));

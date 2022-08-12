@@ -12,8 +12,7 @@ GameObject:
   - component: {fileID: 598967587030884269}
   - component: {fileID: 7289298636964829034}
   - component: {fileID: 8534573680138053330}
-  - component: {fileID: 2840231770761752837}
-  - component: {fileID: 7381319102221260292}
+  - component: {fileID: 213229570372825314}
   m_Layer: 0
   m_Name: PlayerPiece
   m_TagString: Untagged
@@ -100,7 +99,7 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
---- !u!114 &2840231770761752837
+--- !u!114 &213229570372825314
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -109,24 +108,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 852914115501002311}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 28281ebaf64171be68b7986f8cfa2013, type: 3}
+  m_Script: {fileID: 11500000, guid: 2cee5a2ecfe5f79d9b6f323f1e815195, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   chipRenderer: {fileID: 7289298636964829034}
-  currentBoard: {fileID: 8096917609653903071, guid: ab3e548a2426669d7b3103027b0559bf, type: 3}
-  currentChipCollider: {fileID: 8534573680138053330}
-  speedToTop: 0.5
-  speedDownBoard: 0.7
-  speedBackToStart: 0.7
---- !u!114 &7381319102221260292
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 852914115501002311}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 33922e8a757af138a894da4d0c8b0059, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

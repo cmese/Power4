@@ -6,10 +6,18 @@ public class ChipManager : MonoBehaviour
 {
     [SerializeField] private MeshRenderer chipRenderer;
 
+    public StateMachine stateMachine {get; private set;}
+    public Queue<IState> stateQueue {get; private set;}
+
+    void Awake() {
+        stateMachine = new StateMachine();
+        stateQueue = new Queue<IState>();
+    }
+
     public void SetColor(Color color) {
         chipRenderer.material.color = color;
     }
     public Color GetColor() {
-        return chipRenderer.material.color;
+        return chipRenderer.sharedMaterial.color;
     }
 }

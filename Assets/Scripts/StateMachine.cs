@@ -1,13 +1,13 @@
-public interface GameState {
+public interface IState {
     public void Enter();
     public void Execute();
     public void Exit();
 }
 
-public class GameStateMachine {
-    public GameState currentState; //{get; private set;}
+public class StateMachine {
+    public IState currentState {get; private set;}
 
-    public void ChangeState(GameState newState) {
+    public void ChangeState(IState newState) {
         if (currentState != null)
             currentState.Exit();
 

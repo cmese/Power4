@@ -1,7 +1,7 @@
 using UnityEngine;
 
 //TODO: bounce / glow animation
-public class IdleState : ChipState {
+public class IdleState : IState {
     private readonly PlayerChipManager playerManager;
 
     public IdleState(PlayerChipManager playerManager) {
@@ -13,7 +13,6 @@ public class IdleState : ChipState {
     }
 
     public void Execute() {
-        Debug.Log("updating Idle state"); //update
     }
 
     public void Exit() {

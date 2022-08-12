@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class DragState : ChipState {
+public class DragState : IState {
     private readonly PlayerChipManager playerManager;
 
     public DragState(PlayerChipManager playerManager) {
@@ -13,7 +13,6 @@ public class DragState : ChipState {
     }
 
     public void Execute() {
-        Debug.Log("updating Drag state"); //update
     }
 
     public void Exit() {

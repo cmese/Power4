@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 8096917609653903069}
   - component: {fileID: 8096917609653903066}
   - component: {fileID: 8096917609653903067}
-  - component: {fileID: 8096917609653903071}
   m_Layer: 0
   m_Name: Gameboard
   m_TagString: Untagged
@@ -98,17 +97,3 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &8096917609653903071
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8096917609653903064}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 075d040363033d04fa5f29a5d062f739, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  menuChipPrefab: {fileID: -5011796632489455370, guid: cbb7c8dc832bdd3ad93612338cfe1976, type: 3}
-  previewChipPrefab: {fileID: 2435782292259603427, guid: 56e8c8eedb7cfa57cb1d80b69aaeb22a, type: 3}

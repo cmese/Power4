@@ -7,26 +7,42 @@ public class Gameboard : MonoBehaviour
     private const int rows = 6;
     private const int cols = 7;
 
+    [SerializeField] private MenuChipManager menuChipPrefab;
+    [SerializeField] private ChipManager dummyChipPrefab;
     [SerializeField] private ChipManager previewChipPrefab;
     private List<ChipManager> previewChips;
 
     private Quaternion chipRotation = Quaternion.Euler(new Vector3(-90, 0, 0));
 
     private Dictionary<Vector2Int, ChipManager> currentChips; //dict representation of current gameboard
-    private Queue<Vector2Int> movedChips;
-
-    private int mostRecentPlay;
+    private Queue<Vector2Int> movedChips; //queue of chips to process for connect 4's
 
     void Awake() {
         currentChips = new Dictionary<Vector2Int, ChipManager>();
         movedChips = new Queue<Vector2Int>();
         previewChips = CreatePreviewChips();
     }
-    void Start() {
-    }
 
-    public void AddChip(Vector2Int pos, ChipManager chip) {
-        currentChips[pos] = chip;
+    public void MenuDictToBoard(Dictionary<int, string[]> menuDict) {
+        ClearBoard();
+        for (int col = 0; col < cols; col++) {
+            int rowIndex = rows-1;
+            if (menuDict.TryGetValue(col, out string[] menuStrings)) {
+                for (int i = menuStrings[0].Length - 1; i >= 0; i--) {
+                    var menuChip = Instantiate(menuChipPrefab, new Vector3(col+0.5f, -rowIndex-0.5f, -0.75f), Quaternion.Euler(new Vector3(-90, 0, 0)));
+                    menuChip.SetColor(GameManager.Instance.playerColor);
+                    menuChip.SetText(menuStrings[0][i].ToString());
+                    currentChips[new Vector2Int(rowIndex, col)] = menuChip;
+                    rowIndex--;
+                }
+            } else {
+                for (int row = rowIndex; row >= 0; row--) {
+                    var dummyChip = Instantiate(dummyChipPrefab, new Vector3(col+0.5f, -row-0.5f, -0.75f), Quaternion.Euler(new Vector3(-90, 0, 0)));
+                    dummyChip.SetColor(Color.black);
+                    currentChips[new Vector2Int(row, col)] = dummyChip;
+                }
+            }
+        }
     }
 
     private List<ChipManager> CreatePreviewChips() {
@@ -69,26 +85,14 @@ public class Gameboard : MonoBehaviour
         return newRow;
     }
 
-    public int ProcessGameboard() {
-        return 0;
-    }
-/*
-    IEnumerator GameDecideCoroutine(bool menu) {
-        yield return StartCoroutine(CheckForWins());
-        if (menu) {
-            MenuManager.Instance.UpdateMenu(mostRecentPlay);
-        } else {
-            //update gamestate = player turn again
-        }
-    }
-*/
-    IEnumerator CheckForWins() {
+    //move to processboardstate TODO: switch this entire thing to gameboard MANAGER
+    public IEnumerator CheckForWins() {
         HashSet<Vector2Int> totalPlayerSet = new HashSet<Vector2Int>();
         HashSet<Vector2Int> totalEnemySet = new HashSet<Vector2Int>();
         while (movedChips.Count > 0) {
             var chipPos = movedChips.Dequeue();
             Color chipColor = currentChips[chipPos].GetColor();
-            if (GameManager.Instance.GetPlayerChipColor() == chipColor) {
+            if (GameManager.Instance.playerColor == chipColor) {
                 totalPlayerSet.UnionWith(HorizontalCheck(chipPos, chipColor));
                 totalPlayerSet.UnionWith(VerticalCheck(chipPos, chipColor));
                 totalPlayerSet.UnionWith(BottomLeftTopRightDiagCheck(chipPos, chipColor)); //can save diag checks if check chipPos.x, chipPos.y is possible for 4 chip diag
@@ -130,14 +134,16 @@ public class Gameboard : MonoBehaviour
                 for (int col = 0; col < cols; col++) {
                     int spaceCount = 0;
                     for (int row = rows-1; row >=0; row--) {
-                        Vector2Int chipAbove = new Vector2Int(row, col);
-                        if (!currentChips.ContainsKey(chipAbove))
+                        Vector2Int pos = new Vector2Int(row, col);
+                        if (!currentChips.ContainsKey(pos))
                             spaceCount++;
-                        if (chipsAboveSet.Contains(chipAbove)) {
-                            var chip = currentChips[chipAbove];
-                            currentChips.Remove(chipAbove);
-                            Vector2Int newLocation = new Vector2Int(chipAbove.x + spaceCount, chipAbove.y);
-                            chip.MoveDown(newLocation.x);
+                        else if (chipsAboveSet.Contains(pos)) {
+                            var chip = currentChips[pos];
+                            currentChips.Remove(pos);
+                            Vector2Int newLocation = new Vector2Int(pos.x + spaceCount, pos.y);
+                            chip.stateQueue.Enqueue(new MoveState(chip, new Vector3(newLocation.y + 0.5f, newLocation.x - 0.5f, -0.75f), 1));
+                            chip.stateQueue.Enqueue(new InBoardState(chip));
+                            chip.stateMachine.ChangeState(chip.stateQueue.Dequeue());
                             currentChips[newLocation] = chip;
                             movedChips.Enqueue(newLocation);
                         }
@@ -148,15 +154,14 @@ public class Gameboard : MonoBehaviour
     }
 
     IEnumerator DebugColorizer(HashSet<Vector2Int> playerWins, HashSet<Vector2Int> enemyWins) {
-        Debug.Log("am i here");
+        Debug.Log("Coloring Connect 4's");
         foreach(Vector2Int pos in playerWins) {
             currentChips[pos].SetColor(Color.green);
         }
         foreach(Vector2Int pos in enemyWins) {
             currentChips[pos].SetColor(Color.red);
         }
-        yield return new WaitForSeconds(3);
-        Debug.Log("waiting");
+        yield return new WaitForSeconds(2);
     }
 
     private HashSet<Vector2Int> HorizontalCheck(Vector2Int pos, Color sameColor) {
@@ -186,7 +191,6 @@ public class Gameboard : MonoBehaviour
             }
         }
         if (matchingChips.Count >= 4) {
-
             return matchingChips;
         }
         matchingChips.Clear(); //change

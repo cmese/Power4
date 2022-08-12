@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 598967587030884269}
   - component: {fileID: 7289298636964829034}
   - component: {fileID: 8534573680138053330}
-  - component: {fileID: 2435782292259603427}
+  - component: {fileID: 4472135148780420964}
   m_Layer: 0
   m_Name: PreviewPiece
   m_TagString: Untagged
@@ -99,7 +99,7 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
---- !u!114 &2435782292259603427
+--- !u!114 &4472135148780420964
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -108,7 +108,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 852914115501002311}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2cee5a2ecfe5f79d9b6f323f1e815195, type: 3}
+  m_Script: {fileID: 11500000, guid: 5c910c4a4ad811d4288407f2e2875e1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   chipRenderer: {fileID: 7289298636964829034}
