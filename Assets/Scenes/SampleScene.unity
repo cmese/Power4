@@ -168,6 +168,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameboard: {fileID: 1440351657}
+  uiManager: {fileID: 1398053562}
   playerChipPrefab: {fileID: 213229570372825314, guid: 424dfd59f4244ff3b87ce9762e19ef65, type: 3}
   isOnline: 0
 --- !u!1 &705507993

@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class UIManager : MonoBehaviour
 {
-    [SerializeField] private TMPro.TextMeshProUGUI infoText;
+    [SerializeField] public TMPro.TextMeshProUGUI infoText;
 
-    //update paneltext 
 }

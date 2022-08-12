@@ -5,7 +5,6 @@ using UnityEngine;
 public class PlayerChipManager : ChipManager {
     private Vector3 mOffset;
     private float mZCoord;
-    private int prevCol = -1;
     public int currentCol {get; private set;}
 
     private Vector3 startPos;
@@ -50,11 +49,6 @@ public class PlayerChipManager : ChipManager {
             currentCol = (int)(Input.mousePosition.x/Screen.width*7); //good enough for now
         } else {
             currentCol = -1;
-        }
-        if (prevCol != currentCol) {
-            //update preview chip
-            //update panel info if menu
-            prevCol = currentCol;
         }
     }
 

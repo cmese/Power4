@@ -7,6 +7,8 @@ public class MenuState : IState
     private readonly GameManager gameManager;
     private PlayerChipManager playerChip;
     private Menu menu;
+    private int currentCol = -1;
+
     private Dictionary<int, string[]> mainMenuDict = new Dictionary<int, string[]>() {
         { 1, new string[] { "MULTI", "Play Online" } },
         { 3, new string[] { "COMP", "Play AI" } },
@@ -30,6 +32,8 @@ public class MenuState : IState
     }
 
     public void Enter() {
+        gameManager.CreateMenuBoard(GetMenu());
+        /*
         switch(menu) {
             case Menu.main:
                 gameManager.CreateMenuBoard(mainMenuDict);
@@ -43,14 +47,21 @@ public class MenuState : IState
             default:
                 Debug.Log("Error: no such Menu");
                 break;
-        }
+        } */
         playerChip = gameManager.CreatePlayerChip();
     }
 
     public void Execute() {
+        if (playerChip.stateMachine.currentState is DragState) {
+            if (currentCol != playerChip.currentCol) {
+                HandleMenuText(playerChip.currentCol);
+                currentCol = playerChip.currentCol;
+            }
+        }
+        if (playerChip.stateMachine.currentState is MoveState) {
+            gameManager.UpdatePreviewChip(-1);
+        }
         if (playerChip.stateMachine.currentState is InBoardState) {
-            Debug.Log(gameManager);
-            Debug.Log(gameManager.stateQueue);
             gameManager.stateQueue.Enqueue(new ProcessBoardState(gameManager));
             switch(menu) {
                 case Menu.main:
@@ -72,7 +83,21 @@ public class MenuState : IState
     }
 
     public void Exit() {
-        Debug.Log("Exiting Menu State");
+        gameManager.UpdateMenuText(false, "");
+    }
+
+    private Dictionary<int, string[]> GetMenu() {
+        switch(menu) {
+            case Menu.main:
+                return mainMenuDict;
+            case Menu.mode:
+                return modeMenuDict;
+            case Menu.online:
+                return onlineMenuDict;
+            default:
+                Debug.Log("Error: no such Menu");
+                return mainMenuDict;
+        }
     }
 
     private void HandleMainMenu() {
@@ -111,5 +136,13 @@ public class MenuState : IState
             gameManager.gameMode = null;
             gameManager.stateQueue.Enqueue(new MenuState(gameManager, Menu.mode));
         }
+    }
+
+    private void HandleMenuText(int col) {
+        if (GetMenu().TryGetValue(col, out var menuItem)) {
+            gameManager.UpdateMenuText(true, menuItem[1]);
+            return;
+        }
+        gameManager.UpdateMenuText(false, "");
     }
 }

@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class DragState : IState {
     private readonly PlayerChipManager playerManager;
+    private int currentCol = -1;
 
     public DragState(PlayerChipManager playerManager) {
         this.playerManager = playerManager;
@@ -13,6 +14,10 @@ public class DragState : IState {
     }
 
     public void Execute() {
+        if (currentCol != playerManager.currentCol) {
+            GameManager.Instance.UpdatePreviewChip(playerManager.currentCol);
+            currentCol = playerManager.currentCol;
+        }
     }
 
     public void Exit() {

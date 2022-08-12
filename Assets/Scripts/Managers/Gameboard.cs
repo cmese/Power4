@@ -10,7 +10,7 @@ public class Gameboard : MonoBehaviour
     [SerializeField] private MenuChipManager menuChipPrefab;
     [SerializeField] private ChipManager dummyChipPrefab;
     [SerializeField] private ChipManager previewChipPrefab;
-    private List<ChipManager> previewChips;
+    public List<ChipManager> previewChips {get; private set;}
 
     private Quaternion chipRotation = Quaternion.Euler(new Vector3(-90, 0, 0));
 
@@ -52,10 +52,6 @@ public class Gameboard : MonoBehaviour
             previewChip.gameObject.SetActive(false);
             previewChips.Add(previewChip);
         }
-        return previewChips;
-    }
-
-    public List<ChipManager> GetPreviewChips() {
         return previewChips;
     }
 
