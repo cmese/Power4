@@ -26,40 +26,24 @@ public class MenuState : IState
         { 4, new string[] { "DUEL", "Duel a Friend (Casual)"} },
     };
 
-    public MenuState(GameManager gameManager, Menu menu)  {
+    public MenuState(GameManager gameManager, Menu menu, PlayerChipManager playerChip)  {
         this.gameManager = gameManager;
         this.menu = menu;
+        this.playerChip = playerChip;
     }
 
     public void Enter() {
         gameManager.CreateMenuBoard(GetMenu());
-        /*
-        switch(menu) {
-            case Menu.main:
-                gameManager.CreateMenuBoard(mainMenuDict);
-                break;
-            case Menu.mode:
-                gameManager.CreateMenuBoard(modeMenuDict);
-                break;
-            case Menu.online:
-                gameManager.CreateMenuBoard(onlineMenuDict);
-                break;
-            default:
-                Debug.Log("Error: no such Menu");
-                break;
-        } */
-        playerChip = gameManager.CreatePlayerChip();
+        playerChip.EnableChip();
     }
 
     public void Execute() {
+        //TODO: move these to appropriate states
         if (playerChip.stateMachine.currentState is DragState) {
             if (currentCol != playerChip.currentCol) {
                 HandleMenuText(playerChip.currentCol);
                 currentCol = playerChip.currentCol;
             }
-        }
-        if (playerChip.stateMachine.currentState is MoveState) {
-            gameManager.UpdatePreviewChip(-1);
         }
         if (playerChip.stateMachine.currentState is InBoardState) {
             gameManager.stateQueue.Enqueue(new ProcessBoardState(gameManager));
@@ -102,14 +86,14 @@ public class MenuState : IState
 
     private void HandleMainMenu() {
         if (playerChip.currentCol == 1) gameManager.isOnline = true;
-        gameManager.stateQueue.Enqueue(new MenuState(gameManager, Menu.mode));
+        gameManager.stateQueue.Enqueue(new MenuState(gameManager, Menu.mode, gameManager.CreatePlayerChip()));
     }
 
     private void HandleModeMenu() {
         switch(playerChip.currentCol) {
             case 0:
                 gameManager.isOnline = false;
-                gameManager.stateQueue.Enqueue(new MenuState(gameManager, Menu.main));
+                gameManager.stateQueue.Enqueue(new MenuState(gameManager, Menu.main, gameManager.CreatePlayerChip()));
                 return;
             case 1:
                 gameManager.gameMode = GameMode.Original;
@@ -125,16 +109,16 @@ public class MenuState : IState
                 break;
         }
         if (gameManager.isOnline) {
-            gameManager.stateQueue.Enqueue(new MenuState(gameManager, Menu.online));
+            gameManager.stateQueue.Enqueue(new MenuState(gameManager, Menu.online, gameManager.CreatePlayerChip()));
         } else {
-            gameManager.StartGame();
+            gameManager.stateQueue.Enqueue(new GameState(gameManager));
         }
     }
 
     private void HandleOnlineMenu() {
         if (playerChip.currentCol == 0) {
             gameManager.gameMode = null;
-            gameManager.stateQueue.Enqueue(new MenuState(gameManager, Menu.mode));
+            gameManager.stateQueue.Enqueue(new MenuState(gameManager, Menu.mode, gameManager.CreatePlayerChip()));
         }
     }
 

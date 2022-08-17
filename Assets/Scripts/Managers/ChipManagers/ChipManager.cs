@@ -20,4 +20,10 @@ public class ChipManager : MonoBehaviour
     public Color GetColor() {
         return chipRenderer.sharedMaterial.color;
     }
+
+    public void SetOpacity(float alphaVal) {
+        var currentColor = GetColor();
+        currentColor.a = alphaVal;
+        SetColor(currentColor);
+    }
 }

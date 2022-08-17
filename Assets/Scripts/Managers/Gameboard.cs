@@ -74,7 +74,6 @@ public class Gameboard : MonoBehaviour
                 currentChips.Add(pos, movedChip);
                 movedChips.Enqueue(pos);
                 newRow = row;
-                //GameManager.Instance.ChipInserted(col);
                 break;
             }
         }
@@ -104,7 +103,10 @@ public class Gameboard : MonoBehaviour
                 //process chips above winners
                 //color totalplayerset, color totalenemyset, pause for a second, then delete
                 //DebugColorizer(totalPlayerSet, totalEnemySet);
-                yield return StartCoroutine(DebugColorizer(totalPlayerSet, totalEnemySet));
+                if (totalPlayerSet.Count >= 4 || totalEnemySet.Count >= 4) {
+                    Debug.Log("WTF");
+                    yield return StartCoroutine(DebugColorizer(totalPlayerSet, totalEnemySet));
+                }
                 HashSet<Vector2Int> chipsAboveSet = new HashSet<Vector2Int>();
                 HashSet<Vector2Int> totalWinSet = new HashSet<Vector2Int>(totalPlayerSet);
                 totalWinSet.UnionWith(totalEnemySet);
@@ -147,6 +149,7 @@ public class Gameboard : MonoBehaviour
                 }
             }
         }
+        GameManager.Instance.Decide(totalPlayerSet, totalEnemySet);
     }
 
     IEnumerator DebugColorizer(HashSet<Vector2Int> playerWins, HashSet<Vector2Int> enemyWins) {

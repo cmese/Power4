@@ -6,10 +6,12 @@ public interface IState {
 
 public class StateMachine {
     public IState currentState {get; private set;}
+    public IState prevState {get; private set;}
 
     public void ChangeState(IState newState) {
         if (currentState != null)
             currentState.Exit();
+        prevState = currentState;
 
         currentState = newState;
         currentState.Enter();

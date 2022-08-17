@@ -8,6 +8,8 @@ public class PlayerChipManager : ChipManager {
     public int currentCol {get; private set;}
 
     private Vector3 startPos;
+    //public StateMachine stateMachine {get; private set;}
+    //public Queue<IState> stateQueue {get; private set;}
 
     void Start() {
         stateMachine.ChangeState(new IdleState(this));
@@ -66,5 +68,15 @@ public class PlayerChipManager : ChipManager {
             stateQueue.Enqueue(new IdleState(this));
         }
         stateMachine.ChangeState(stateQueue.Dequeue());
+    }
+
+    public void DisableChip() {
+        gameObject.GetComponent<Collider>().enabled = false;
+        SetOpacity(0.25f);
+    }
+
+    public void EnableChip() {
+        gameObject.GetComponent<Collider>().enabled = true;
+        SetOpacity(1f);
     }
 }

@@ -170,6 +170,7 @@ MonoBehaviour:
   gameboard: {fileID: 1440351657}
   uiManager: {fileID: 1398053562}
   playerChipPrefab: {fileID: 213229570372825314, guid: 424dfd59f4244ff3b87ce9762e19ef65, type: 3}
+  enemyChipPrefab: {fileID: 4472135148780420964, guid: 56e8c8eedb7cfa57cb1d80b69aaeb22a, type: 3}
   isOnline: 0
 --- !u!1 &705507993
 GameObject:

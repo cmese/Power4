@@ -25,6 +25,7 @@ public class MoveState : IState {
     }
 
     IEnumerator LerpPosition(Vector3 finalLerpPos, float duration) {
+        GameManager.Instance.UpdatePreviewChip(-1);
         float time = 0;
         Vector3 startPosition = chipManager.transform.position;
         while (time < duration) {
