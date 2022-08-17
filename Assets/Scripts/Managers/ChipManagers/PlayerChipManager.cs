@@ -7,6 +7,7 @@ public class PlayerChipManager : ChipManager {
     private float mZCoord;
     public int currentCol {get; private set;}
 
+    private float chipSpeed = 0.5f;
     private Vector3 startPos;
     //public StateMachine stateMachine {get; private set;}
     //public Queue<IState> stateQueue {get; private set;}
@@ -60,11 +61,11 @@ public class PlayerChipManager : ChipManager {
         int newRow = GameManager.Instance.AddToBoard(currentCol, this); //returns -1 if not players turn or invalid move
         if (newRow > -1) {
             gameObject.GetComponent<Collider>().enabled = false;
-            stateQueue.Enqueue(new MoveState(this, new Vector3(currentCol+0.5f, 1-0.5f, -0.75f), 1.0f)); //move to top
-            stateQueue.Enqueue(new MoveState(this, new Vector3(currentCol+0.5f, -newRow-0.5f, -0.75f), 1.0f)); //move down board
+            stateQueue.Enqueue(new MoveState(this, new Vector3(currentCol+0.5f, 1-0.5f, -0.75f), chipSpeed)); //move to top
+            stateQueue.Enqueue(new MoveState(this, new Vector3(currentCol+0.5f, -newRow-0.5f, -0.75f), chipSpeed)); //move down board
             stateQueue.Enqueue(new InBoardState(this));
         } else {
-            stateQueue.Enqueue(new MoveState(this, startPos, 1.0f));
+            stateQueue.Enqueue(new MoveState(this, startPos, chipSpeed));
             stateQueue.Enqueue(new IdleState(this));
         }
         stateMachine.ChangeState(stateQueue.Dequeue());

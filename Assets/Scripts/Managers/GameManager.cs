@@ -25,6 +25,9 @@ public class GameManager : MonoBehaviour
     public bool isOnline;// {get; set;}
     public GameMode? gameMode;// {get; set;}
 
+    [SerializeField] Animator playAgainPanelAnimator;
+    [SerializeField] GameObject playAgainPanel;
+
     void Awake() {
         Instance = this;
         stateMachine = new StateMachine();
@@ -43,6 +46,7 @@ public class GameManager : MonoBehaviour
 
     void Update() {
         stateMachine.Update();
+
     }
 
     private Color GetEnemyColor() {
@@ -129,6 +133,33 @@ public class GameManager : MonoBehaviour
     public void UpdateMenuText(bool isActive, string infoText) {
         uiManager.infoText.text = infoText;
         uiManager.infoText.gameObject.SetActive(isActive);
+    }
+
+    public void TriggerPlayAgainPanel() {
+        playAgainPanel.SetActive(true);
+        playAgainPanelAnimator.SetTrigger("Show");
+    }
+
+    public void PlayAgainYesButton() {
+        StartCoroutine(PlayAgainYes());
+    }
+
+    public void PlayAgainExitButton() {
+        StartCoroutine(PlayAgainExit());
+    }
+
+    private IEnumerator PlayAgainYes() {
+        stateMachine.ChangeState(new GameState(this));
+        yield return new WaitForSeconds(2.0f); //change this from 2 seconds => total animation time length
+        playAgainPanel.SetActive(false);
+        //stateQueue.Enqueue(new GameState(this));
+    }
+
+    private IEnumerator PlayAgainExit() {
+        stateMachine.ChangeState(new MenuState(this, Menu.mode, CreatePlayerChip()));
+        yield return new WaitForSeconds(2.0f);
+        playAgainPanel.SetActive(false);
+        //stateQueue.Enqueue(new MenuState(this, Menu.mode, CreatePlayerChip()));
     }
 }
 

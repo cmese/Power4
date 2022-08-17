@@ -11,6 +11,7 @@ public class LoseState : IState
     }
 
     public void Enter() {
+        gameManager.TriggerPlayAgainPanel();
         Debug.Log("Entering Lose State");
     }
 

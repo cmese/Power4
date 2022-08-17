@@ -11,6 +11,7 @@ public class WinState : IState
     }
 
     public void Enter() {
+        gameManager.TriggerPlayAgainPanel();
         Debug.Log("Entering WIN State");
     }
 
