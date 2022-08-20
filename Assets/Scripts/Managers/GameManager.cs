@@ -20,7 +20,7 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private ChipManager enemyChipPrefab;
     //private ChipManager enemyChip;
-    private Color enemyColor;
+    public Color enemyColor {get; private set;}
 
     public bool isOnline;// {get; set;}
     public GameMode? gameMode;// {get; set;}

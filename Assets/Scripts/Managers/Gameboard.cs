@@ -64,7 +64,8 @@ public class Gameboard : MonoBehaviour
         movedChips.Clear();
     }
 
-    //TODO: change to moveDownInsert
+    //TODO: seperate this. insert into abstract model, return new row. in manager, if new row > -1, call method (todo) to add to current chips and enqueue to moved chips
+    //TODO: seperate all abstract model behavior from mono behaviour
     public int insert(int col, ChipManager movedChip) {
         if (col < 0) return -1;
         int newRow = -1;
@@ -160,7 +161,7 @@ public class Gameboard : MonoBehaviour
         foreach(Vector2Int pos in enemyWins) {
             currentChips[pos].SetColor(Color.red);
         }
-        yield return new WaitForSeconds(2);
+        yield return new WaitForSeconds(1);
     }
 
     private HashSet<Vector2Int> HorizontalCheck(Vector2Int pos, Color sameColor) {
