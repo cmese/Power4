@@ -65,8 +65,8 @@ public class AIManager {
         else if (oppCount == 3 && emptySpace == 1) score = -1000;
 
         // 2/4
-        else if (aiCount == 2 && emptySpace == 2) score = 1000;
-        else if (oppCount == 2 && emptySpace == 2) score = 1000;
+        else if (aiCount == 2 && emptySpace == 2) score = 100;
+        else if (oppCount == 2 && emptySpace == 2) score = -100;
 
         return score;
     }
@@ -224,7 +224,7 @@ public class AIManager {
     }
 
 
-    private float miniMax(int[,] board, int depth, bool isMax) {
+    private float miniMax(int[,] board, int depth, bool isMax, float alpha, float beta) {
         float score = evaluateBoard(board);
         //if terminal board, return score
         if (depth == maxDepth) return score; // recursion depth
@@ -237,8 +237,11 @@ public class AIManager {
                 int newRow = findRow(board, col);
                 if (newRow > -1) {
                     board[newRow, col] = 1;
-                    best = Mathf.Max(best, miniMax(board, depth + 1, !isMax));
+                    best = Mathf.Max(best, miniMax(board, depth + 1, !isMax, alpha, beta));
+                    alpha = Mathf.Max(alpha, best);
                     board[newRow, col] = 0;
+                    if (beta <= alpha)
+                        break;
                 }
             }
             return best;
@@ -248,8 +251,11 @@ public class AIManager {
                 int newRow = findRow(board, col);
                 if (newRow > -1) {
                     board[newRow, col] = 2;
-                    best = Mathf.Min(best, miniMax(board, depth + 1, !isMax));
+                    best = Mathf.Min(best, miniMax(board, depth + 1, !isMax, alpha, beta));
+                    beta = Mathf.Min(beta, best);
                     board[newRow, col] = 0;
+                    if (beta <= alpha)
+                        break;
                 }
             }
             return best;
@@ -303,7 +309,7 @@ public class AIManager {
                 //make the move
                 board[newRow, col] = 1;
                 //compute evaluation for this move
-                float moveVal = miniMax(board, 0, false); //AI always maximizer
+                float moveVal = miniMax(board, 0, false, Mathf.NegativeInfinity, Mathf.Infinity); //AI always maximizer
                 // undo the move
                 board[newRow, col] = 0;
 
